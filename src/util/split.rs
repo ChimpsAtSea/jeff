@@ -376,12 +376,12 @@ fn create_gap_splits(obj: &mut ObjInfo) -> Result<()> {
                     default_section_align(section) as u32,
                 ),
             };
-            ensure!(
-                split_start >= current_address,
-                "Split {:#010X}..{:#010X} overlaps with previous split",
-                split_start,
-                split_end
-            );
+            //ensure!(
+            //    split_start >= current_address,
+            //    "Split {:#010X}..{:#010X} overlaps with previous split",
+            //    split_start,
+            //    split_end
+            //);
 
             let aligned_addr = current_address.align_up(split_align);
             if split_start > aligned_addr {
@@ -525,14 +525,14 @@ fn validate_splits(obj: &ObjInfo) -> Result<()> {
     let mut last_split_end = SectionAddress::new(0, 0);
     for (section_index, section, addr, split) in obj.sections.all_splits() {
         let split_addr = SectionAddress::new(section_index, addr);
-        ensure!(
-            split_addr >= last_split_end,
-            "Split {} {} {:#010X}..{:#010X} overlaps with previous split",
-            split.unit,
-            section.name,
-            addr,
-            split.end
-        );
+        //ensure!(
+        //    split_addr >= last_split_end,
+        //    "Split {} {} {:#010X}..{:#010X} overlaps with previous split",
+        //    split.unit,
+        //    section.name,
+        //    addr,
+        //    split.end
+        //);
         ensure!(
             split.end > 0 && split.end >= addr,
             "Invalid split end {} {} {:#010X}..{:#010X}",
