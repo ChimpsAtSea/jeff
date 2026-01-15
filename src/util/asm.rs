@@ -30,7 +30,9 @@ struct SymbolEntry {
 }
 
 pub fn write_asm<W>(w: &mut W, obj: &ObjInfo) -> Result<()>
-where W: Write + ?Sized {
+where
+    W: Write + ?Sized,
+{
     writeln!(w, ".include \"macros.inc\"")?;
     if !obj.name.is_empty() {
         let name = obj
@@ -51,15 +53,15 @@ where W: Write + ?Sized {
         // Build symbol start/end entries
         let mut entries = BTreeMap::<u32, Vec<SymbolEntry>>::new();
         for (symbol_index, symbol) in obj.symbols.for_section(section_idx) {
-            entries.nested_push(symbol.address as u32, SymbolEntry {
-                index: symbol_index,
-                kind: SymbolEntryKind::Start,
-            });
+            entries.nested_push(
+                symbol.address as u32,
+                SymbolEntry { index: symbol_index, kind: SymbolEntryKind::Start },
+            );
             if symbol.size > 0 {
-                entries.nested_push((symbol.address + symbol.size) as u32, SymbolEntry {
-                    index: symbol_index,
-                    kind: SymbolEntryKind::End,
-                });
+                entries.nested_push(
+                    (symbol.address + symbol.size) as u32,
+                    SymbolEntry { index: symbol_index, kind: SymbolEntryKind::End },
+                );
             }
         }
 
@@ -67,7 +69,9 @@ where W: Write + ?Sized {
 
         // Generate local jump labels
         if section.kind == ObjSectionKind::Code {
-            for (addr, ins) in InsIter::new(&section.data, section.address as u32, Extensions::xenon()) {
+            for (addr, ins) in
+                InsIter::new(&section.data, section.address as u32, Extensions::xenon())
+            {
                 if let Some(address) = ins.branch_dest(addr) {
                     if ins.field_aa() || !section.contains(address) {
                         continue;
@@ -102,16 +106,19 @@ where W: Write + ?Sized {
                         target_symbol_idx = Some(symbol_idx);
                     }
                     if let Some(symbol_idx) = target_symbol_idx {
-                        relocations.insert(addr, ObjReloc {
-                            kind: match ins.op {
-                                Opcode::B => ObjRelocKind::PpcRel24,
-                                Opcode::Bc => ObjRelocKind::PpcRel14,
-                                _ => unreachable!(),
+                        relocations.insert(
+                            addr,
+                            ObjReloc {
+                                kind: match ins.op {
+                                    Opcode::B => ObjRelocKind::PpcRel24,
+                                    Opcode::Bc => ObjRelocKind::PpcRel14,
+                                    _ => unreachable!(),
+                                },
+                                target_symbol: symbol_idx,
+                                addend: 0,
+                                module: None,
                             },
-                            target_symbol: symbol_idx,
-                            addend: 0,
-                            module: None,
-                        });
+                        );
                     }
                 }
             }
@@ -342,7 +349,9 @@ where
 }
 
 fn write_reloc<W>(w: &mut W, symbols: &[ObjSymbol], reloc: &ObjReloc) -> Result<()>
-where W: Write + ?Sized {
+where
+    W: Write + ?Sized,
+{
     write_reloc_symbol(w, symbols, reloc)?;
     match reloc.kind {
         ObjRelocKind::Absolute | ObjRelocKind::PpcRel24 | ObjRelocKind::PpcRel14 => {
@@ -644,7 +653,9 @@ fn find_data_kind(
 }
 
 fn write_string<W>(w: &mut W, data: &[u8]) -> Result<()>
-where W: Write + ?Sized {
+where
+    W: Write + ?Sized,
+{
     let terminated = matches!(data.last(), Some(&b) if b == 0);
     if terminated {
         write!(w, "\t.string \"")?;
@@ -671,7 +682,9 @@ where W: Write + ?Sized {
 use encoding_rs::SHIFT_JIS;
 
 fn write_string_shiftjis<W>(w: &mut W, data: &[u8]) -> Result<()>
-where W: Write + ?Sized {
+where
+    W: Write + ?Sized,
+{
     if data.last() != Some(&0x00) {
         bail!("Non-terminated Shift-JIS string");
     }
@@ -701,7 +714,9 @@ where W: Write + ?Sized {
 }
 
 fn write_string16<W>(w: &mut W, data: &[u16]) -> Result<()>
-where W: Write + ?Sized {
+where
+    W: Write + ?Sized,
+{
     if matches!(data.last(), Some(&b) if b == 0) {
         write!(w, "\t.string16 \"")?;
     } else {
@@ -731,7 +746,9 @@ where W: Write + ?Sized {
 }
 
 fn write_data_chunk<W>(w: &mut W, data: &[u8], data_kind: ObjDataKind) -> Result<()>
-where W: Write + ?Sized {
+where
+    W: Write + ?Sized,
+{
     let remain = data;
     match data_kind {
         ObjDataKind::String => {
@@ -1001,11 +1018,7 @@ where
     Ok(())
 }
 
-fn write_reloc_symbol<W>(
-    w: &mut W,
-    symbols: &[ObjSymbol],
-    reloc: &ObjReloc,
-) -> std::io::Result<()>
+fn write_reloc_symbol<W>(w: &mut W, symbols: &[ObjSymbol], reloc: &ObjReloc) -> std::io::Result<()>
 where
     W: Write + ?Sized,
 {
@@ -1018,7 +1031,9 @@ where
 }
 
 fn write_symbol_name<W>(w: &mut W, name: &str) -> std::io::Result<()>
-where W: Write + ?Sized {
+where
+    W: Write + ?Sized,
+{
     if name.contains('@')
         || name.contains('<')
         || name.contains('\\')
